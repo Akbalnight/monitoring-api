@@ -1,4 +1,4 @@
-package com.askute.services.monitoring.beans.monitoring.model;
+package com.askute.services.monitoring.monitoring.model;
 
 public class Service {
     private Integer id;

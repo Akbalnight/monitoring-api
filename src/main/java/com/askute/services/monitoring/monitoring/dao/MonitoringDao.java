@@ -1,10 +1,9 @@
-package com.askute.services.monitoring.beans.monitoring.dao;
+package com.askute.services.monitoring.monitoring.dao;
 
-import com.askute.services.monitoring.beans.audit.model.Audit;
-import com.askute.services.monitoring.beans.monitoring.model.JsonService;
-import com.askute.services.monitoring.beans.monitoring.model.Service;
+import com.askute.services.monitoring.monitoring.model.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.RowCountCallbackHandler;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -13,9 +12,7 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Repository
 public class MonitoringDao {
@@ -34,6 +31,8 @@ public class MonitoringDao {
             "WHERE id=:id";
 
     private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM public.mg_services order by id asc";
+
+    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM public.mg_services";
 
     @PostConstruct
     public void init() {
@@ -78,6 +77,19 @@ public class MonitoringDao {
 
         return result;
     }
+
+    public void deleteMgServices (){
+        try {
+            // Если таблица пустая заполним ее
+            RowCountCallbackHandler countCallback = new RowCountCallbackHandler();
+            jdbcTemplate.query(SQL_DELETE_MG_SERVICES, countCallback);
+        }
+        catch (Exception e){
+            System.out.println("Ошибка очистки mg_services");
+            System.out.println(e);
+        }
+    }
+
 
     private MapSqlParameterSource getServiceParams(Service service){
         MapSqlParameterSource params = new MapSqlParameterSource();

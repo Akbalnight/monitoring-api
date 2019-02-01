@@ -1,4 +1,4 @@
-package com.askute.services.monitoring.beans.audit.model;
+package com.askute.services.monitoring.audit.model;
 
 public class Audit {
     String uname;
