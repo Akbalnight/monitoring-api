@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "name": "Ведомости и досчеты",
+    "url": "http://app.hlaskute:8080/statement/version"
+  },
+  {
+    "id": 2,
+    "name": "Протоколы",
+    "url": "http://app.hlaskute:8080/protocol/version"
+  },
+  {
+    "id": 3,
+    "name": "Акты",
+    "url": "http://app.hlaskute:8080/act/version"
+  },
+  {
+    "id": 4,
+    "name": "Справочники",
+    "url": "http://app.hlaskute:8080/directory/version"
+  },
+  {
+    "id": 5,
+    "name": "Согласования",
+    "url": "http://app.hlaskute:8080/approvment/version"
+  },
+  {
+    "id": 6,
+    "name": "Конструктор отчетов",
+    "url": "http://app.hlaskute:8080/reports/version"
+  },
+  {
+    "id": 7,
+    "name": "Регламентная отчетность",
+    "url": "http://app.hlaskute:8080/reglament/version"
+  },
+  {
+    "id": 8,
+    "name": "Уведомления",
+    "url": "http://app.hlaskute:8080/notifications/version"
+  },
+  {
+    "id": 9,
+    "name": "Администрирование",
+    "url": "http://app.hlaskute:8080/management/version"
+  }
+]
