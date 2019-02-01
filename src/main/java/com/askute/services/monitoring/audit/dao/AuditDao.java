@@ -1,6 +1,6 @@
-package com.askute.services.monitoring.beans.audit.dao;
+package com.askute.services.monitoring.audit.dao;
 
-import com.askute.services.monitoring.beans.audit.model.Audit;
+import com.askute.services.monitoring.audit.model.Audit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;

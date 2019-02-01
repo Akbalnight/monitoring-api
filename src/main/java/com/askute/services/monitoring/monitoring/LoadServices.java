@@ -1,11 +1,12 @@
-package com.askute.services.monitoring.beans.monitoring;
+package com.askute.services.monitoring.monitoring;
 
-import com.askute.services.monitoring.beans.monitoring.dao.MonitoringDao;
-import com.askute.services.monitoring.beans.monitoring.model.JsonService;
-import com.askute.services.monitoring.beans.monitoring.model.Service;
+import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
+import com.askute.services.monitoring.monitoring.model.JsonService;
+import com.askute.services.monitoring.monitoring.model.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Component
@@ -27,6 +27,9 @@ public class LoadServices {
 
     @Autowired
     MonitoringDao monitoringDao;
+
+    @Value("${config}")
+    private String CONFIG_PATH;
 
     private final ObjectMapper objectMapper;
 
@@ -45,20 +48,26 @@ public class LoadServices {
     @PostConstruct
     public void init() {
         try {
+            monitoringDao.deleteMgServices();
+
             jsonServices = new ArrayList<>();
             this.rest = new RestTemplate();
             this.headers = new HttpHeaders();
 
-            Path path = new File(getClass().getResource("/services.json").toURI()).toPath();
+            Path path;
+
+            File confJson = new File(CONFIG_PATH+"/services.json");
+            if(confJson.exists()) path = confJson.toPath();
+            else path = new File(getClass().getResource("/services.json").toURI()).toPath();
+
             byte[] data = Files.readAllBytes(path);
             String strData = new String(data, "UTF-8");
             JsonNode joins = objectMapper.readTree(strData);
             for (int i = 0; i < joins.size(); i++) {
-                List<String> tables = new ArrayList<>();
                 JsonNode joinNode = joins.get(i);
-                System.out.print(joinNode.get("id").asInt() + "\t");
-                System.out.print(joinNode.get("name").asText() + "\t\t\t");
-                System.out.println(joinNode.get("url").asText());
+//                System.out.print(joinNode.get("id").asInt() + "\t");
+//                System.out.print(joinNode.get("name").asText() + "\t\t\t");
+//                System.out.println(joinNode.get("url").asText());
 
                 JsonService js = new JsonService();
                 js.setId(joinNode.get("id").asInt());
@@ -66,10 +75,7 @@ public class LoadServices {
                 js.setUrl(joinNode.get("url").asText());
 
                 jsonServices.add(js);
-            }
-
-            for (int i = 0; i < jsonServices.size(); i++){
-                checkService(jsonServices.get(i), true);
+                checkService(js, true);
             }
 
         } catch (IOException | URISyntaxException e) {

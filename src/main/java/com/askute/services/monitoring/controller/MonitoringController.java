@@ -1,9 +1,9 @@
 package com.askute.services.monitoring.controller;
 
-import com.askute.services.monitoring.beans.audit.dao.AuditDao;
-import com.askute.services.monitoring.beans.audit.model.Audit;
-import com.askute.services.monitoring.beans.monitoring.dao.MonitoringDao;
-import com.askute.services.monitoring.beans.monitoring.model.Service;
+import com.askute.services.monitoring.audit.dao.AuditDao;
+import com.askute.services.monitoring.audit.model.Audit;
+import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
+import com.askute.services.monitoring.monitoring.model.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.info.BuildProperties;
 import org.springframework.http.HttpStatus;

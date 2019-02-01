@@ -7,7 +7,11 @@ public class ServletInitializer extends SpringBootServletInitializer {
 
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(MonitoringApplication.class);
+
+		String configName = System.getProperty("config.name.monitoring");
+		return configName != null ?
+				application.properties(String.format("spring.config.name=%s", configName)).sources(MonitoringApplication.class) :
+				application.sources(MonitoringApplication.class);
 	}
 
 }
