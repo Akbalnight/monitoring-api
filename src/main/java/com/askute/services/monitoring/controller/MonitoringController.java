@@ -54,7 +54,10 @@ class MonitoringController {
     }
 
 
-
+    @GetMapping("/db")
+    public String getDbUrl(){
+        return monitoringDao.getDbUrl();
+    }
 }
 
 
