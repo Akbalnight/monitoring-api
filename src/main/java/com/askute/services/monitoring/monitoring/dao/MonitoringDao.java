@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class MonitoringDao {
         }
         catch (DuplicateKeyException e){}
         catch (Exception e){
-            System.out.println("Ошибка записи в mg_services");
+//            System.out.println("Ошибка записи в mg_services");
             System.out.println(e);
         }
     }
@@ -55,7 +56,7 @@ public class MonitoringDao {
             jdbcTemplate.update(SQL_UPDATE_MG_SERVICES, getServiceParams(service));
         }
         catch (Exception e){
-            System.out.println("Ошибка обновления mg_services");
+//            System.out.println("Ошибка обновления mg_services");
             System.out.println(e);
         }
     }
@@ -85,8 +86,17 @@ public class MonitoringDao {
             jdbcTemplate.query(SQL_DELETE_MG_SERVICES, countCallback);
         }
         catch (Exception e){
-            System.out.println("Ошибка очистки mg_services");
+//            System.out.println("Ошибка очистки mg_services");
             System.out.println(e);
+        }
+    }
+
+    public String getDbUrl(){
+        try {
+            return dataSource.getConnection().getMetaData().getURL();
+        }catch (SQLException e){
+            System.out.println(e);
+            return "";
         }
     }
 
