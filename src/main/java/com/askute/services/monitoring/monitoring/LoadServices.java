@@ -8,6 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -17,6 +20,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,6 +31,9 @@ public class LoadServices {
 
     @Autowired
     MonitoringDao monitoringDao;
+
+    @Autowired
+    private SimpMessagingTemplate simpMessagingTemplate;
 
     @Value("${config}")
     private String CONFIG_PATH;
@@ -57,28 +64,26 @@ public class LoadServices {
             Path path;
 
             File confJson = new File(CONFIG_PATH+"/services.json");
-            if(confJson.exists()) path = confJson.toPath();
-            else path = new File(getClass().getResource("/services.json").toURI()).toPath();
+            if(confJson.exists()) {
+                path = confJson.toPath();
+                byte[] data = Files.readAllBytes(path);
+                String strData = new String(data, "UTF-8");
+                JsonNode joins = objectMapper.readTree(strData);
 
-            byte[] data = Files.readAllBytes(path);
-            String strData = new String(data, "UTF-8");
-            JsonNode joins = objectMapper.readTree(strData);
-            for (int i = 0; i < joins.size(); i++) {
-                JsonNode joinNode = joins.get(i);
-//                System.out.print(joinNode.get("id").asInt() + "\t");
-//                System.out.print(joinNode.get("name").asText() + "\t\t\t");
-//                System.out.println(joinNode.get("url").asText());
+                for (int i = 0; i < joins.size(); i++) {
+                    JsonNode joinNode = joins.get(i);
+                    JsonService js = new JsonService();
+                    js.setId(joinNode.get("id").asInt());
+                    js.setName(joinNode.get("name").asText());
+                    js.setUrl(joinNode.get("url").asText());
 
-                JsonService js = new JsonService();
-                js.setId(joinNode.get("id").asInt());
-                js.setName(joinNode.get("name").asText());
-                js.setUrl(joinNode.get("url").asText());
+                    jsonServices.add(js);
+                    checkService(js, true);
+                }
 
-                jsonServices.add(js);
-                checkService(js, true);
             }
 
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -88,7 +93,11 @@ public class LoadServices {
         for (int i = 0; i < jsonServices.size(); i++){
             checkService(jsonServices.get(i), false);
         }
+        simpMessagingTemplate.convertAndSend("/topic/services", monitoringDao.selectMgServices());
     }
+
+
+
 
     public void checkService(JsonService jsonService, Boolean firstCheck) {
         HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
