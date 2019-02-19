@@ -24,8 +24,8 @@ public class MonitoringDao {
     private NamedParameterJdbcTemplate jdbcTemplate;
 
     private static final String SQL_INSERT_MG_SERVICES = "INSERT " +
-            "INTO public.mg_services( id, service_name, service_version, service_status, update_time) " +
-            "VALUES (:id, :service_name, :service_version, :service_status, NOW())";
+            "INTO public.mg_services( id, service_name, service_url, service_key, service_version, service_status, update_time) " +
+            "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
 
     private static final String SQL_UPDATE_MG_SERVICES = "UPDATE public.mg_services " +
             "SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
@@ -71,7 +71,13 @@ public class MonitoringDao {
             }
             do
             {
-                result.add( new Service(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getBoolean(4)));
+                result.add( new Service(
+                        rs.getInt("id"),
+                        rs.getString("service_name"),
+                        rs.getString("service_url"),
+                        rs.getString("service_key"),
+                        rs.getString("service_version"),
+                        rs.getBoolean("service_status")));
             }
             while (rs.next());
         });
@@ -105,6 +111,8 @@ public class MonitoringDao {
         MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", service.getId());
         params.addValue("service_name", service.getServiceName());
+        params.addValue("service_url", service.getServiceUrl());
+        params.addValue("service_key", service.getServiceKey());
         params.addValue("service_version", service.getServiceVersion());
         params.addValue("service_status", service.getServiceStatus());
         return params;

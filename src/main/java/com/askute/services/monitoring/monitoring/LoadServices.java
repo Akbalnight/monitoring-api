@@ -1,6 +1,7 @@
 package com.askute.services.monitoring.monitoring;
 
 import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
+import com.askute.services.monitoring.monitoring.model.DeferredQuote;
 import com.askute.services.monitoring.monitoring.model.JsonService;
 import com.askute.services.monitoring.monitoring.model.Service;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
@@ -25,6 +27,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class LoadServices {
@@ -76,6 +80,7 @@ public class LoadServices {
                     js.setId(joinNode.get("id").asInt());
                     js.setName(joinNode.get("name").asText());
                     js.setUrl(joinNode.get("url").asText());
+                    js.setKey(joinNode.get("key").asText());
 
                     jsonServices.add(js);
                     checkService(js, true);
@@ -93,7 +98,21 @@ public class LoadServices {
         for (int i = 0; i < jsonServices.size(); i++){
             checkService(jsonServices.get(i), false);
         }
-        simpMessagingTemplate.convertAndSend("/topic/services", monitoringDao.selectMgServices());
+        List<Service> Ls = monitoringDao.selectMgServices();
+
+        for (DeferredQuote result : responseBodyQueue) {
+            result.setResult(Ls);
+            responseBodyQueue.remove(result);
+        }
+
+    }
+
+    private final Queue<DeferredQuote> responseBodyQueue = new ConcurrentLinkedQueue<>();
+
+    public DeferredQuote addToQueue(){
+        DeferredQuote dq = new DeferredQuote();
+        responseBodyQueue.add(dq);
+        return dq;
     }
 
 
@@ -106,6 +125,8 @@ public class LoadServices {
 
         service.setId(jsonService.getId());
         service.setServiceName(jsonService.getName());
+        service.setServiceUrl(jsonService.getUrl());
+        service.setServiceKey(jsonService.getKey());
 
         try{
             ResponseEntity<String> responseEntity = rest.exchange(jsonService.getUrl(), HttpMethod.GET, requestEntity, String.class);
