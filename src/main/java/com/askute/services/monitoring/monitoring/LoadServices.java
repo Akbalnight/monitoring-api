@@ -1,6 +1,7 @@
 package com.askute.services.monitoring.monitoring;
 
 import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
+import com.askute.services.monitoring.monitoring.model.DeferredQuote;
 import com.askute.services.monitoring.monitoring.model.JsonService;
 import com.askute.services.monitoring.monitoring.model.Service;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -8,9 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -19,12 +17,12 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class LoadServices {
@@ -32,11 +30,13 @@ public class LoadServices {
     @Autowired
     MonitoringDao monitoringDao;
 
-    @Autowired
-    private SimpMessagingTemplate simpMessagingTemplate;
-
     @Value("${config}")
     private String CONFIG_PATH;
+
+    /**
+     * Очередь клиентов на получение статусов сервисов
+     */
+    private final Queue<DeferredQuote> responseBodyQueue = new ConcurrentLinkedQueue<>();
 
     private final ObjectMapper objectMapper;
 
@@ -53,7 +53,7 @@ public class LoadServices {
 
 
     @PostConstruct
-    public void init() {
+    private void init() {
         try {
             monitoringDao.deleteMgServices();
 
@@ -76,6 +76,7 @@ public class LoadServices {
                     js.setId(joinNode.get("id").asInt());
                     js.setName(joinNode.get("name").asText());
                     js.setUrl(joinNode.get("url").asText());
+                    js.setKey(joinNode.get("key").asText());
 
                     jsonServices.add(js);
                     checkService(js, true);
@@ -89,23 +90,28 @@ public class LoadServices {
     }
 
     @Scheduled(fixedRate = 10000)
-    public void checkServices(){
+    private void checkServices(){
         for (int i = 0; i < jsonServices.size(); i++){
             checkService(jsonServices.get(i), false);
         }
-        simpMessagingTemplate.convertAndSend("/topic/services", monitoringDao.selectMgServices());
+        List<Service> Ls = monitoringDao.selectMgServices();
+
+        for (DeferredQuote result : responseBodyQueue) {
+            result.setResult(Ls);
+            responseBodyQueue.remove(result);
+        }
+
     }
 
-
-
-
-    public void checkService(JsonService jsonService, Boolean firstCheck) {
+    private void checkService(JsonService jsonService, Boolean firstCheck) {
         HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
 
         Service service = new Service();
 
         service.setId(jsonService.getId());
         service.setServiceName(jsonService.getName());
+        service.setServiceUrl(jsonService.getUrl());
+        service.setServiceKey(jsonService.getKey());
 
         try{
             ResponseEntity<String> responseEntity = rest.exchange(jsonService.getUrl(), HttpMethod.GET, requestEntity, String.class);
@@ -121,4 +127,15 @@ public class LoadServices {
         else
             monitoringDao.updateMgServices(service);
     }
+
+    /**
+     * Добавление клиента в очередь на получение статусов сервисов
+     * @return
+     */
+    public DeferredQuote addToQueue(){
+        DeferredQuote dq = new DeferredQuote();
+        responseBodyQueue.add(dq);
+        return dq;
+    }
+
 }
