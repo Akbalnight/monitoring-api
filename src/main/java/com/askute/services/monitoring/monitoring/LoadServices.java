@@ -117,7 +117,7 @@ public class LoadServices {
             ResponseEntity<String> responseEntity = rest.exchange(jsonService.getUrl(), HttpMethod.GET, requestEntity, String.class);
             service.setServiceStatus( true );
             service.setServiceVersion( responseEntity.getBody() );
-        }catch (HttpClientErrorException e){
+        }catch (Exception e){
             service.setServiceStatus( false );
             service.setServiceVersion( "0.0.0");
         }
