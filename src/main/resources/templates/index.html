@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Мониторинг</title>
+
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+    <nav class="navbar navbar-dark bg-dark">
+        <a class="navbar-brand" href="#">Мониторинг</a>
+    </nav>
+
+    <main role="main" class="container custom-main-container">
+
+        <div class="custom-table-container">
+            <table class="table table-bordered">
+                <thead class="custom-thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Имя</th>
+                    <th scope="col">Url</th>
+                    <th scope="col">Ключ</th>
+                    <th scope="col">Версия</th>
+                    <th scope="col">Статус</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="service : ${services}">
+                    <td><span th:text="${service.id}"></span></td>
+                    <td><span th:text="${service.serviceName}"></span></td>
+                    <td><a target="_blank" th:href="${service.serviceUrl}" th:text="${service.serviceUrl}"></a></td>
+                    <td><span th:text="${service.serviceKey}"></span></td>
+                    <td><span th:text="${service.serviceVersion}"></span></td>
+                    <td><span th:class="${service.serviceStatus} ? 'service-status-green' : 'service-status-red'" th:text="${service.serviceStatus}"></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </main>
+    <!-- /.container -->
+
+    <script type="text/javascript" th:src="@{/js/bootstrap.min.js}"></script>
+
+</body>
+</html>
