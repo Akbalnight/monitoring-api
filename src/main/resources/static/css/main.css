@@ -1,0 +1,25 @@
+.custom-main-container{
+    height: calc(100vh - 56px);
+    height: calc(100vh - 83px);
+    display: flex;
+    align-items: center;
+}
+.custom-table-container{
+    flex-grow: 1;
+    align-self: center;
+}
+
+.table .custom-thead-dark th {
+    color: #fff;
+    background-color: #343a40;
+    border-color: #545a60;
+}
+
+
+.service-status-green{
+    color: green;
+}
+
+.service-status-red{
+    color: red;
+}

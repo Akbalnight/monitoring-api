@@ -1,47 +1,68 @@
 [
   {
     "id": 1,
-    "name": "Ведомости и досчеты",
-    "url": "http://app.hlaskute:8080/statement/version"
+    "name": "Ведомости",
+    "url": "http://app.hlaskute:8803/meteringreports/version",
+    "key": "meteringreports"
   },
   {
     "id": 2,
     "name": "Протоколы",
-    "url": "http://app.hlaskute:8080/protocol/version"
+    "url": "http://app.hlaskute:8810/protocol/version",
+    "key": "protocol"
   },
   {
     "id": 3,
     "name": "Акты",
-    "url": "http://app.hlaskute:8080/act/version"
+    "url": "http://app.hlaskute:8805/act/version",
+    "key": "act"
   },
   {
     "id": 4,
     "name": "Справочники",
-    "url": "http://app.hlaskute:8080/directory/version"
+    "url": "http://app.hlaskute:8804/directory/version",
+    "key": "directory"
   },
   {
     "id": 5,
     "name": "Согласования",
-    "url": "http://app.hlaskute:8080/approvment/version"
+    "url": "http://app.hlaskute:8806/approvment/version",
+    "key": "approvment"
   },
   {
     "id": 6,
     "name": "Конструктор отчетов",
-    "url": "http://app.hlaskute:8080/reports/version"
+    "url": "http://app.hlaskute:8801/reports/version",
+    "key": "reports"
   },
   {
     "id": 7,
     "name": "Регламентная отчетность",
-    "url": "http://app.hlaskute:8080/reglament/version"
+    "url": "http://app.hlaskute:8809/reglament/version",
+    "key": "reglament"
   },
   {
     "id": 8,
     "name": "Уведомления",
-    "url": "http://app.hlaskute:8080/notifications/version"
+    "url": "http://app.hlaskute:8080/notifications/version",
+    "key": "notifications"
   },
   {
     "id": 9,
     "name": "Администрирование",
-    "url": "http://app.hlaskute:8080/management/version"
+    "url": "http://app.hlaskute:8807/management/version",
+    "key": "management"
+  },
+  {
+    "id": 10,
+    "name": "Администрирование ASKUTE",
+    "url": "http://app.hlaskute:8808/management-object/version",
+    "key": "management_object"
+  },
+  {
+    "id": 11,
+    "name": "Шина данных",
+    "url": "http://esb.hlaskute:9001/version",
+    "key": "esb"
   }
 ]
