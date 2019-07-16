@@ -30,19 +30,19 @@ public class MonitoringDao {
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final String SQL_CHECK_MG_SERVICES = "select count(*) from web.monitoring_services";
+    private static final String SQL_CHECK_MG_SERVICES = "select count(*) from web.monitoring_services_view";
 
     private static final String SQL_INSERT_MG_SERVICES = "INSERT " +
-            "INTO web.monitoring_services( id, service_name, service_url, service_key, service_version, service_status, update_time) " +
+            "INTO web.monitoring_services_view( id, service_name, service_url, service_key, service_version, service_status, update_time) " +
             "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
 
-    private static final String SQL_UPDATE_MG_SERVICES = "UPDATE web.monitoring_services " +
+    private static final String SQL_UPDATE_MG_SERVICES = "UPDATE web.monitoring_services_view " +
             "SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
             "WHERE id=:id";
 
-    private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM web.monitoring_services order by id asc";
+    private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM web.monitoring_services_view order by id asc";
 
-    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM web.monitoring_services";
+    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM web.monitoring_services_view";
 
     @PostConstruct
     public void init() {
