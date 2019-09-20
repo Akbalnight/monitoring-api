@@ -15,6 +15,8 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
 @Repository
@@ -30,24 +32,30 @@ public class MonitoringDao {
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final String SQL_CHECK_MG_SERVICES = "select count(*) from :tableName";
-
-    private static final String SQL_INSERT_MG_SERVICES = "INSERT " +
-            "INTO :tableName (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
-            "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
-
-    private static final String SQL_UPDATE_MG_SERVICES = "UPDATE :tableName " +
-            "SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
-            "WHERE id=:id";
-
-    private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM :tableName order by id asc";
-
-    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM :tableName";
+    private String SQL_CHECK_MG_SERVICES;
+    private String SQL_INSERT_MG_SERVICES;
+    private String SQL_UPDATE_MG_SERVICES;
+    private String SQL_SELECT_MG_SERVICES;
+    private String SQL_DELETE_MG_SERVICES;
 
     @PostConstruct
     public void init() {
+        SQL_CHECK_MG_SERVICES = "SELECT COUNT(*) FROM " + tableName;
+
+        SQL_INSERT_MG_SERVICES = "INSERT " +
+                "INTO " + tableName + " (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
+                "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
+
+        SQL_UPDATE_MG_SERVICES = "UPDATE " + tableName +
+                " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
+                "WHERE id=:id";
+
+        SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " ORDER BY id ASC";
+
+        SQL_DELETE_MG_SERVICES = "DELETE FROM " + tableName;
+
         jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-        jdbcTemplate.queryForObject(SQL_CHECK_MG_SERVICES, getTableNameParams(), Long.class);
+        jdbcTemplate.queryForObject(SQL_CHECK_MG_SERVICES, Collections.emptyMap(), Long.class);
     }
 
     public void insertMgServices (Service service){
@@ -71,7 +79,7 @@ public class MonitoringDao {
 
     public List<Service> selectMgServices (){
         List<Service> result = new ArrayList<>();
-        jdbcTemplate.query(SQL_SELECT_MG_SERVICES, getTableNameParams(), (ResultSet rs) ->
+        jdbcTemplate.query(SQL_SELECT_MG_SERVICES, (ResultSet rs) ->
         {
             if (rs.isBeforeFirst())
             {
@@ -95,7 +103,7 @@ public class MonitoringDao {
 
     public void deleteMgServices (){
         try {
-            jdbcTemplate.queryForObject(SQL_DELETE_MG_SERVICES, getTableNameParams(), Long.class);
+            jdbcTemplate.queryForObject(SQL_DELETE_MG_SERVICES, Collections.emptyMap(), Long.class);
         }
         catch (Exception e){
             log.error(e.toString());
@@ -111,12 +119,8 @@ public class MonitoringDao {
         }
     }
 
-    private MapSqlParameterSource getTableNameParams() {
-        return new MapSqlParameterSource("tableName", tableName);
-    }
-
     private MapSqlParameterSource getServiceParams(Service service){
-        MapSqlParameterSource params = getTableNameParams();
+        MapSqlParameterSource params = new MapSqlParameterSource();
         params.addValue("id", service.getId());
         params.addValue("service_name", service.getServiceName());
         params.addValue("service_url", service.getServiceUrl());
