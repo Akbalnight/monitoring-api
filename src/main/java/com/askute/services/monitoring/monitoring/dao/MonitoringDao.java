@@ -15,14 +15,13 @@ import javax.sql.DataSource;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 @Repository
 public class MonitoringDao {
 
     @Value("${monitoring.dbtable}")
-    private String databaseTable;
+    private String tableName;
 
     @Autowired
     private DataSource dataSource;
@@ -31,24 +30,24 @@ public class MonitoringDao {
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    private final String SQL_CHECK_MG_SERVICES = "select count(*) from " + databaseTable;
+    private static final String SQL_CHECK_MG_SERVICES = "select count(*) from :tableName";
 
-    private final String SQL_INSERT_MG_SERVICES = "INSERT " +
-            "INTO " + databaseTable + " (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
+    private static final String SQL_INSERT_MG_SERVICES = "INSERT " +
+            "INTO :tableName (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
             "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
 
-    private final String SQL_UPDATE_MG_SERVICES = "UPDATE " + databaseTable +
-            " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
+    private static final String SQL_UPDATE_MG_SERVICES = "UPDATE :tableName " +
+            "SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
             "WHERE id=:id";
 
-    private final String SQL_SELECT_MG_SERVICES = "SELECT * FROM " + databaseTable + " order by id asc";
+    private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM :tableName order by id asc";
 
-    private final String SQL_DELETE_MG_SERVICES = "DELETE FROM " + databaseTable;
+    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM :tableName";
 
     @PostConstruct
     public void init() {
         jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-        jdbcTemplate.queryForObject(SQL_CHECK_MG_SERVICES, (HashMap) null, Long.class);
+        jdbcTemplate.queryForObject(SQL_CHECK_MG_SERVICES, getTableNameParams(), Long.class);
     }
 
     public void insertMgServices (Service service){
@@ -72,7 +71,7 @@ public class MonitoringDao {
 
     public List<Service> selectMgServices (){
         List<Service> result = new ArrayList<>();
-        jdbcTemplate.query(SQL_SELECT_MG_SERVICES, (ResultSet rs) ->
+        jdbcTemplate.query(SQL_SELECT_MG_SERVICES, getTableNameParams(), (ResultSet rs) ->
         {
             if (rs.isBeforeFirst())
             {
@@ -96,7 +95,7 @@ public class MonitoringDao {
 
     public void deleteMgServices (){
         try {
-            jdbcTemplate.queryForObject(SQL_DELETE_MG_SERVICES, (HashMap) null, Long.class);
+            jdbcTemplate.queryForObject(SQL_DELETE_MG_SERVICES, getTableNameParams(), Long.class);
         }
         catch (Exception e){
             log.error(e.toString());
@@ -112,9 +111,12 @@ public class MonitoringDao {
         }
     }
 
+    private MapSqlParameterSource getTableNameParams() {
+        return new MapSqlParameterSource("tableName", tableName);
+    }
 
     private MapSqlParameterSource getServiceParams(Service service){
-        MapSqlParameterSource params = new MapSqlParameterSource();
+        MapSqlParameterSource params = getTableNameParams();
         params.addValue("id", service.getId());
         params.addValue("service_name", service.getServiceName());
         params.addValue("service_url", service.getServiceUrl());
@@ -123,4 +125,4 @@ public class MonitoringDao {
         params.addValue("service_status", service.getServiceStatus());
         return params;
     }
-    }
+}
