@@ -39,13 +39,11 @@ public class JsonService {
         return key;
     }
 
-    public String getServer()
-    {
+    public String getServer() {
         return server;
     }
 
-    public void setServer(String server)
-    {
+    public void setServer(String server) {
         this.server = server;
     }
 }

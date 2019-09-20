@@ -68,13 +68,11 @@ public class Service {
         return serviceStatus;
     }
 
-    public String getServerId()
-    {
+    public String getServerId() {
         return serverId;
     }
 
-    public void setServerId(String serverId)
-    {
+    public void setServerId(String serverId) {
         this.serverId = serverId;
     }
 }
