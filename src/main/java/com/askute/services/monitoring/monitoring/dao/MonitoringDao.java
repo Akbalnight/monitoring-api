@@ -1,13 +1,11 @@
 package com.askute.services.monitoring.monitoring.dao;
 
 import com.askute.services.monitoring.monitoring.model.Service;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.RowCountCallbackHandler;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -23,6 +21,9 @@ import java.util.List;
 @Repository
 public class MonitoringDao {
 
+    @Value("${monitoring.dbtable}")
+    private String databaseTable;
+
     @Autowired
     private DataSource dataSource;
 
@@ -30,19 +31,19 @@ public class MonitoringDao {
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
-    private static final String SQL_CHECK_MG_SERVICES = "select count(*) from web.monitoring_services_view";
+    private final String SQL_CHECK_MG_SERVICES = "select count(*) from " + databaseTable;
 
-    private static final String SQL_INSERT_MG_SERVICES = "INSERT " +
-            "INTO web.monitoring_services_view( id, service_name, service_url, service_key, service_version, service_status, update_time) " +
+    private final String SQL_INSERT_MG_SERVICES = "INSERT " +
+            "INTO " + databaseTable + " (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
             "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
 
-    private static final String SQL_UPDATE_MG_SERVICES = "UPDATE web.monitoring_services_view " +
-            "SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
+    private final String SQL_UPDATE_MG_SERVICES = "UPDATE " + databaseTable +
+            " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
             "WHERE id=:id";
 
-    private static final String SQL_SELECT_MG_SERVICES = "SELECT * FROM web.monitoring_services_view order by id asc";
+    private final String SQL_SELECT_MG_SERVICES = "SELECT * FROM " + databaseTable + " order by id asc";
 
-    private static final String SQL_DELETE_MG_SERVICES = "DELETE FROM web.monitoring_services_view";
+    private final String SQL_DELETE_MG_SERVICES = "DELETE FROM " + databaseTable;
 
     @PostConstruct
     public void init() {
