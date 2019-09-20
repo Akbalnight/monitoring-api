@@ -7,6 +7,7 @@ public class Service {
     private String serviceKey;
     private String serviceVersion;
     private Boolean serviceStatus;
+    private String serverId;
 
     public Service(){}
 
@@ -65,5 +66,15 @@ public class Service {
 
     public Boolean getServiceStatus() {
         return serviceStatus;
+    }
+
+    public String getServerId()
+    {
+        return serverId;
+    }
+
+    public void setServerId(String serverId)
+    {
+        this.serverId = serverId;
     }
 }

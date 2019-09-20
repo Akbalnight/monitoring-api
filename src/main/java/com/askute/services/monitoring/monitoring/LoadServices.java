@@ -61,11 +61,9 @@ public class LoadServices {
             this.rest = new RestTemplate();
             this.headers = new HttpHeaders();
 
-            Path path;
-
             File confJson = new File(CONFIG_PATH+"/services.json");
             if(confJson.exists()) {
-                path = confJson.toPath();
+                Path path = confJson.toPath();
                 byte[] data = Files.readAllBytes(path);
                 String strData = new String(data, "UTF-8");
                 JsonNode joins = objectMapper.readTree(strData);
@@ -77,6 +75,7 @@ public class LoadServices {
                     js.setName(joinNode.get("name").asText());
                     js.setUrl(joinNode.get("url").asText());
                     js.setKey(joinNode.get("key").asText());
+                    js.setServer(joinNode.get("server").asText());
 
                     jsonServices.add(js);
                     checkService(js, true);
@@ -112,6 +111,7 @@ public class LoadServices {
         service.setServiceName(jsonService.getName());
         service.setServiceUrl(jsonService.getUrl());
         service.setServiceKey(jsonService.getKey());
+        service.setServerId(jsonService.getServer());
 
         try{
             ResponseEntity<String> responseEntity = rest.exchange(jsonService.getUrl(), HttpMethod.GET, requestEntity, String.class);
