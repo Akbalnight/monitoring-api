@@ -43,11 +43,11 @@ public class MonitoringDao {
         SQL_CHECK_MG_SERVICES = "SELECT COUNT(*) FROM " + tableName;
 
         SQL_INSERT_MG_SERVICES = "INSERT " +
-                "INTO " + tableName + " (id, service_name, service_url, service_key, service_version, service_status, update_time) " +
-                "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW())";
+                "INTO " + tableName + " (id, service_name, service_url, service_key, service_version, service_status, update_time, server_id) " +
+                "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW(), :server_id)";
 
         SQL_UPDATE_MG_SERVICES = "UPDATE " + tableName +
-                " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW() " +
+                " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW(), server_id=:server_id " +
                 "WHERE id=:id";
 
         SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " ORDER BY id ASC";
@@ -127,6 +127,7 @@ public class MonitoringDao {
         params.addValue("service_key", service.getServiceKey());
         params.addValue("service_version", service.getServiceVersion());
         params.addValue("service_status", service.getServiceStatus());
+        params.addValue("server_id", service.getServerId());
         return params;
     }
 }

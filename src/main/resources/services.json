@@ -3,66 +3,84 @@
     "id": 1,
     "name": "Ведомости",
     "url": "http://app.hlaskute:8803/meteringreports/version",
-    "key": "meteringreports"
+    "key": "meteringreports",
+    "server": ""
   },
   {
     "id": 2,
     "name": "Протоколы",
     "url": "http://app.hlaskute:8810/protocol/version",
-    "key": "protocol"
+    "key": "protocol",
+    "server": ""
   },
   {
     "id": 3,
     "name": "Акты",
     "url": "http://app.hlaskute:8805/act/version",
-    "key": "act"
+    "key": "act",
+    "server": ""
   },
   {
     "id": 4,
     "name": "Справочники",
     "url": "http://app.hlaskute:8804/directory/version",
-    "key": "directory"
+    "key": "directory",
+    "server": ""
   },
   {
     "id": 5,
     "name": "Согласования",
     "url": "http://app.hlaskute:8806/approvment/version",
-    "key": "approvment"
+    "key": "approvment",
+    "server": ""
   },
   {
     "id": 6,
     "name": "Конструктор отчетов",
     "url": "http://app.hlaskute:8801/reports/version",
-    "key": "reports"
+    "key": "reports",
+    "server": ""
   },
   {
     "id": 7,
     "name": "Регламентная отчетность",
     "url": "http://app.hlaskute:8809/reglament/version",
-    "key": "reglament"
+    "key": "reglament",
+    "server": ""
   },
   {
     "id": 8,
     "name": "Уведомления",
-    "url": "http://app.hlaskute:8080/notifications/version",
-    "key": "notifications"
+    "url": "http://app.hlaskute:8815/notifications/version",
+    "key": "notifications",
+    "server": ""
   },
   {
     "id": 9,
     "name": "Администрирование",
     "url": "http://app.hlaskute:8807/management/version",
-    "key": "management"
+    "key": "management",
+    "server": ""
   },
   {
     "id": 10,
     "name": "Администрирование ASKUTE",
     "url": "http://app.hlaskute:8808/management-object/version",
-    "key": "management_object"
+    "key": "management_object",
+    "server": ""
   },
   {
     "id": 11,
     "name": "Шина данных",
     "url": "http://esb.hlaskute:9001/version",
-    "key": "esb"
+    "key": "esb",
+    "server": ""
+  },
+  {
+    "id": 12,
+    "name": "Интеграция СУ",
+    "url": "http://app.hlaskute:8811/version",
+    "key": "middle_level_integration",
+    "server": ""
   }
 ]

@@ -5,6 +5,7 @@ public class JsonService {
     private String name;
     private String url;
     private String key;
+    private String server;
 
     public void setId(Integer id) {
         this.id = id;
@@ -36,5 +37,13 @@ public class JsonService {
 
     public String getKey() {
         return key;
+    }
+
+    public String getServer() {
+        return server;
+    }
+
+    public void setServer(String server) {
+        this.server = server;
     }
 }
