@@ -15,7 +15,7 @@ public class UIController {
 
     @GetMapping("/")
     public String main(Model model) {
-        model.addAttribute("services", monitoringDao.selectMgServices());
+        model.addAttribute("services", monitoringDao.selectAllMgServices());
 
         return "index"; //view
     }

@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -22,13 +24,14 @@ import java.util.List;
 @Repository
 public class MonitoringDao {
 
-    @Value("${monitoring.dbtable}")
+    @Value("${monitoring.data.table}")
     private String tableName;
 
     @Autowired
     private DataSource dataSource;
 
     private Logger log = LoggerFactory.getLogger(MonitoringDao.class);
+    private final RowMapper<Service> rowMapper = BeanPropertyRowMapper.newInstance(Service.class);
 
     private NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -47,10 +50,10 @@ public class MonitoringDao {
                 "VALUES (:id, :service_name, :service_url, :service_key, :service_version, :service_status, NOW(), :server_id)";
 
         SQL_UPDATE_MG_SERVICES = "UPDATE " + tableName +
-                " SET service_name=:service_name, service_version=:service_version, service_status=:service_status, update_time=NOW(), server_id=:server_id " +
+                " SET service_version=:service_version, service_status=:service_status, update_time=NOW() " +
                 "WHERE id=:id";
 
-        SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " ORDER BY id ASC";
+        SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " %s ORDER BY id ASC";
 
         SQL_DELETE_MG_SERVICES = "DELETE FROM " + tableName;
 
@@ -77,28 +80,12 @@ public class MonitoringDao {
         }
     }
 
-    public List<Service> selectMgServices (){
-        List<Service> result = new ArrayList<>();
-        jdbcTemplate.query(SQL_SELECT_MG_SERVICES, (ResultSet rs) ->
-        {
-            if (rs.isBeforeFirst())
-            {
-                return;
-            }
-            do
-            {
-                result.add( new Service(
-                        rs.getInt("id"),
-                        rs.getString("service_name"),
-                        rs.getString("service_url"),
-                        rs.getString("service_key"),
-                        rs.getString("service_version"),
-                        rs.getBoolean("service_status")));
-            }
-            while (rs.next());
-        });
+    public List<Service> selectByServerNameMgServices (String serverName){
+        return jdbcTemplate.query(String.format(SQL_SELECT_MG_SERVICES, "where server_name = :server_name"), new MapSqlParameterSource("server_name", serverName), rowMapper);
+    }
 
-        return result;
+    public List<Service> selectAllMgServices (){
+        return jdbcTemplate.query(String.format(SQL_SELECT_MG_SERVICES, ""), rowMapper);
     }
 
     public void deleteMgServices (){
@@ -127,7 +114,7 @@ public class MonitoringDao {
         params.addValue("service_key", service.getServiceKey());
         params.addValue("service_version", service.getServiceVersion());
         params.addValue("service_status", service.getServiceStatus());
-        params.addValue("server_id", service.getServerId());
+        params.addValue("server_name", service.getServerName());
         return params;
     }
 }
