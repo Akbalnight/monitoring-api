@@ -20,4 +20,5 @@ public class Service {
     private Boolean serviceStatus;
     private OffsetDateTime updateTime;
     private String serverName;
+    private String serviceVersionPath;
 }

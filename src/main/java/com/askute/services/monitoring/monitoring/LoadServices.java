@@ -3,6 +3,7 @@ package com.askute.services.monitoring.monitoring;
 import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
 import com.askute.services.monitoring.monitoring.model.DeferredQuote;
 import com.askute.services.monitoring.monitoring.model.Service;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +44,6 @@ public class LoadServices {
     private HttpHeaders headers;
     private HttpStatus status;
 
-
     @Autowired
     public LoadServices(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -52,42 +52,8 @@ public class LoadServices {
 
     @PostConstruct
     private void init() {
-//        try {
-//            monitoringDao.deleteMgServices();
-
-//            jsonServices = new ArrayList<>();
-
         this.rest = new RestTemplate();
-        this.headers = new HttpHeaders();
-        headers.set("accept", "text/plain");
-
         services = monitoringDao.selectByServerNameMgServices(SERVER_NAME);
-
-//            File confJson = new File(CONFIG_PATH+"/services.json");
-//            if(confJson.exists()) {
-//                Path path = confJson.toPath();
-//                byte[] data = Files.readAllBytes(path);
-//                String strData = new String(data, "UTF-8");
-//                JsonNode joins = objectMapper.readTree(strData);
-//
-//                for (int i = 0; i < joins.size(); i++) {
-//                    JsonNode joinNode = joins.get(i);
-//                    JsonService js = new JsonService();
-//                    js.setId(joinNode.get("id").asInt());
-//                    js.setName(joinNode.get("name").asText());
-//                    js.setUrl(joinNode.get("url").asText());
-//                    js.setKey(joinNode.get("key").asText());
-//                    js.setServer(joinNode.get("server").asText());
-//
-//                    jsonServices.add(js);
-//                    checkService(js, true);
-//                }
-//
-//            }
-
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
     }
 
     @Scheduled(fixedRate = 10000)
@@ -108,28 +74,26 @@ public class LoadServices {
     }
 
     private void checkService(Service service, Boolean firstCheck) {
-        HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
-
-//        Service service = new Service();
-
-//        service.setId(jsonService.getId());
-//        service.setServiceName(jsonService.getName());
-//        service.setServiceUrl(jsonService.getUrl());
-//        service.setServiceKey(jsonService.getKey());
-//        service.setServerId(jsonService.getServer());
-
         try{
-            ResponseEntity<String> responseEntity = rest.exchange(service.getServiceUrl(), HttpMethod.GET, requestEntity, String.class);
+            String response = rest.getForObject(service.getServiceUrl(), String.class);
+            String version;
+
+            if(service.getServiceVersionPath() != null) {
+                JsonNode responseJson = objectMapper.readTree(response);
+                version = responseJson.at(service.getServiceVersionPath()).asText();
+//                log.info("Version: [{}]", joins.at(service.getServiceVersionPath()).asText());
+            }else {
+                version = response;
+//                log.info("Version: [{}]", result);
+            }
+
             service.setServiceStatus( true );
-            service.setServiceVersion( responseEntity.getBody() );
+            service.setServiceVersion( version );
         }catch (Exception e){
+            log.info(e.getMessage());
             service.setServiceStatus( false );
             service.setServiceVersion( "0.0.0");
         }
-
-//        if(firstCheck)
-//            monitoringDao.insertMgServices(service);
-//        else
         monitoringDao.updateMgServices(service);
     }
 
