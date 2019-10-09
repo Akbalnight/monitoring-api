@@ -2,28 +2,23 @@ package com.askute.services.monitoring.monitoring;
 
 import com.askute.services.monitoring.monitoring.dao.MonitoringDao;
 import com.askute.services.monitoring.monitoring.model.DeferredQuote;
-import com.askute.services.monitoring.monitoring.model.JsonService;
 import com.askute.services.monitoring.monitoring.model.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+@Log4j2
 @Component
 public class LoadServices {
 
@@ -33,6 +28,9 @@ public class LoadServices {
     @Value("${config}")
     private String CONFIG_PATH;
 
+    @Value("${monitoring.server.name}")
+    private String SERVER_NAME;
+
     /**
      * Очередь клиентов на получение статусов сервисов
      */
@@ -40,11 +38,11 @@ public class LoadServices {
 
     private final ObjectMapper objectMapper;
 
-    private List<JsonService> jsonServices;
+//    private List<JsonService> jsonServices;
+    private List<Service> services;
     private RestTemplate rest;
     private HttpHeaders headers;
     private HttpStatus status;
-
 
     @Autowired
     public LoadServices(ObjectMapper objectMapper) {
@@ -54,46 +52,19 @@ public class LoadServices {
 
     @PostConstruct
     private void init() {
-        try {
-            monitoringDao.deleteMgServices();
-
-            jsonServices = new ArrayList<>();
-            this.rest = new RestTemplate();
-            this.headers = new HttpHeaders();
-
-            File confJson = new File(CONFIG_PATH+"/services.json");
-            if(confJson.exists()) {
-                Path path = confJson.toPath();
-                byte[] data = Files.readAllBytes(path);
-                String strData = new String(data, "UTF-8");
-                JsonNode joins = objectMapper.readTree(strData);
-
-                for (int i = 0; i < joins.size(); i++) {
-                    JsonNode joinNode = joins.get(i);
-                    JsonService js = new JsonService();
-                    js.setId(joinNode.get("id").asInt());
-                    js.setName(joinNode.get("name").asText());
-                    js.setUrl(joinNode.get("url").asText());
-                    js.setKey(joinNode.get("key").asText());
-                    js.setServer(joinNode.get("server").asText());
-
-                    jsonServices.add(js);
-                    checkService(js, true);
-                }
-
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.rest = new RestTemplate();
+        services = monitoringDao.selectByServerNameMgServices(SERVER_NAME);
     }
 
     @Scheduled(fixedRate = 10000)
     private void checkServices(){
-        for (int i = 0; i < jsonServices.size(); i++){
-            checkService(jsonServices.get(i), false);
+        services = monitoringDao.selectByServerNameMgServices(SERVER_NAME);
+//        log.info("Count check services: [{}]", services.size());
+        for (int i = 0; i < services.size(); i++){
+            checkService(services.get(i), false);
         }
-        List<Service> Ls = monitoringDao.selectMgServices();
+
+        List<Service> Ls = monitoringDao.selectAllMgServices();
 
         for (DeferredQuote result : responseBodyQueue) {
             result.setResult(Ls);
@@ -102,30 +73,28 @@ public class LoadServices {
 
     }
 
-    private void checkService(JsonService jsonService, Boolean firstCheck) {
-        HttpEntity<String> requestEntity = new HttpEntity<String>("", headers);
-
-        Service service = new Service();
-
-        service.setId(jsonService.getId());
-        service.setServiceName(jsonService.getName());
-        service.setServiceUrl(jsonService.getUrl());
-        service.setServiceKey(jsonService.getKey());
-        service.setServerId(jsonService.getServer());
-
+    private void checkService(Service service, Boolean firstCheck) {
         try{
-            ResponseEntity<String> responseEntity = rest.exchange(jsonService.getUrl(), HttpMethod.GET, requestEntity, String.class);
+            String response = rest.getForObject(service.getServiceUrl(), String.class);
+            String version;
+
+            if(service.getServiceVersionPath() != null) {
+                JsonNode responseJson = objectMapper.readTree(response);
+                version = responseJson.at(service.getServiceVersionPath()).asText();
+//                log.info("Version: [{}]", joins.at(service.getServiceVersionPath()).asText());
+            }else {
+                version = response;
+//                log.info("Version: [{}]", result);
+            }
+
             service.setServiceStatus( true );
-            service.setServiceVersion( responseEntity.getBody() );
+            service.setServiceVersion( version );
         }catch (Exception e){
+            log.info(e.getMessage());
             service.setServiceStatus( false );
             service.setServiceVersion( "0.0.0");
         }
-
-        if(firstCheck)
-            monitoringDao.insertMgServices(service);
-        else
-            monitoringDao.updateMgServices(service);
+        monitoringDao.updateMgServices(service);
     }
 
     /**

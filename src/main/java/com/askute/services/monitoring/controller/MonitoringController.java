@@ -53,7 +53,7 @@ class MonitoringController {
 
     @GetMapping("/monitoring/list")
     public List<Service> getListServices(){
-        return monitoringDao.selectMgServices();
+        return monitoringDao.selectAllMgServices();
     }
 
     @GetMapping("/monitoring/list/poll")
