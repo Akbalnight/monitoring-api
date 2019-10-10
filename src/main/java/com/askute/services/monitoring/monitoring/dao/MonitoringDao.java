@@ -27,6 +27,9 @@ public class MonitoringDao {
     @Value("${monitoring.data.table}")
     private String tableName;
 
+    @Value("${monitoring.servers.table}")
+    private String tableServerName;
+
     @Autowired
     private DataSource dataSource;
 
@@ -40,6 +43,7 @@ public class MonitoringDao {
     private String SQL_UPDATE_MG_SERVICES;
     private String SQL_SELECT_MG_SERVICES;
     private String SQL_DELETE_MG_SERVICES;
+    private String SQL_INSERT_MG_SERVERS;
 
     @PostConstruct
     public void init() {
@@ -57,6 +61,12 @@ public class MonitoringDao {
 
         SQL_DELETE_MG_SERVICES = "DELETE FROM " + tableName;
 
+        SQL_INSERT_MG_SERVERS = String.format("" +
+                "INSERT INTO %s (server_ip, update_time) " +
+                    "VALUES (:serverIp, current_timestamp) " +
+                    "on conflict  (server_ip) do " +
+                    "update set update_time = current_timestamp;", tableServerName);
+
         jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
         jdbcTemplate.queryForObject(SQL_CHECK_MG_SERVICES, Collections.emptyMap(), Long.class);
     }
@@ -67,7 +77,7 @@ public class MonitoringDao {
         }
         catch (DuplicateKeyException e){}
         catch (Exception e){
-            log.error(e.toString());
+            log.error(e.getMessage());
         }
     }
 
@@ -76,7 +86,7 @@ public class MonitoringDao {
             jdbcTemplate.update(SQL_UPDATE_MG_SERVICES, getServiceParams(service));
         }
         catch (Exception e){
-            log.error(e.toString());
+            log.error(e.getMessage());
         }
     }
 
@@ -93,7 +103,17 @@ public class MonitoringDao {
             jdbcTemplate.queryForObject(SQL_DELETE_MG_SERVICES, Collections.emptyMap(), Long.class);
         }
         catch (Exception e){
-            log.error(e.toString());
+            log.error(e.getMessage());
+        }
+    }
+
+    public void insertMgServers(String serverIp){
+        try {
+            jdbcTemplate.update(SQL_INSERT_MG_SERVERS, new MapSqlParameterSource("serverIp", serverIp));
+        }
+        catch (DuplicateKeyException e){}
+        catch (Exception e){
+            log.error(e.getMessage());
         }
     }
 
@@ -101,7 +121,7 @@ public class MonitoringDao {
         try {
             return dataSource.getConnection().getMetaData().getURL();
         }catch (SQLException e){
-            log.error(e.toString());
+            log.error(e.getMessage());
             return "";
         }
     }

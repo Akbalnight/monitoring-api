@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -28,7 +30,6 @@ public class LoadServices {
     @Value("${config}")
     private String CONFIG_PATH;
 
-    @Value("${monitoring.server.name}")
     private String SERVER_NAME;
 
     /**
@@ -58,6 +59,7 @@ public class LoadServices {
 
     @Scheduled(fixedRate = 10000)
     private void checkServices(){
+        checkOwnIp();
         services = monitoringDao.selectByServerNameMgServices(SERVER_NAME);
 //        log.info("Count check services: [{}]", services.size());
         for (int i = 0; i < services.size(); i++){
@@ -71,6 +73,18 @@ public class LoadServices {
             responseBodyQueue.remove(result);
         }
 
+    }
+
+    private void checkOwnIp(){
+        InetAddress address1;
+        try {
+            address1 = InetAddress.getByName("monitoring.local");
+            SERVER_NAME = address1.getHostAddress();
+            monitoringDao.insertMgServers(address1.getHostAddress());
+//            log.info("SERVER_NAME: [{}]", SERVER_NAME);
+        } catch (UnknownHostException e) {
+            log.info(e.getMessage());
+        }
     }
 
     private void checkService(Service service, Boolean firstCheck) {

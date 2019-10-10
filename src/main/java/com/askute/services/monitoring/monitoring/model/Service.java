@@ -6,13 +6,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Service {
-    private Integer id;
+    private UUID id;
+    private Integer code;
     private String serviceName;
     private String serviceUrl;
     private String serviceKey;
