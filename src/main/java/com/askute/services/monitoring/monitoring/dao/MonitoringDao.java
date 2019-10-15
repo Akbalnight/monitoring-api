@@ -57,7 +57,7 @@ public class MonitoringDao {
                 " SET service_version=:service_version, service_status=:service_status, update_time=NOW() " +
                 "WHERE id=:id";
 
-        SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " %s ORDER BY id ASC";
+        SQL_SELECT_MG_SERVICES = "SELECT * FROM " + tableName + " %s ORDER BY code ASC";
 
         SQL_DELETE_MG_SERVICES = "DELETE FROM " + tableName;
 
